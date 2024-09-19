@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { Navbar } from "./Navbar";
 import { motion } from "framer-motion";
 
@@ -11,7 +12,11 @@ export const Header = () => {
     >
       <div className="bg-gradient-to-r from-pink-400 to-pink-50 border-b shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="text-lg font-bold text-white">D&apos; Caramell</div>
+          <div>
+            <Link href={"/"} className="text-lg font-bold text-white">
+              D&apos; Caramell
+            </Link>
+          </div>
           <div className="flex items-center space-x-4">
             <button className="relative">
               {/* Icono del carrito */}

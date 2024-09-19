@@ -3,67 +3,60 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
-const categories = [
-  {
-    name: "Decoración",
-    image: "/images/producto2.jpg",
-    link: "#decoracion",
+// Variantes de animación para las tarjetas
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.6, ease: "easeOut" },
   },
-  {
-    name: "Bebidas",
-    image: "/images/producto2.jpg",
-    link: "#bebidas",
-  },
-  {
-    name: "Postres",
-    image: "/images/producto2.jpg",
-    link: "#postres",
-  },
-  {
-    name: "Tortas",
-    image: "/images/producto2.jpg",
-    link: "#tortas",
-  },
-];
+};
 
 export const ProductCategories = () => {
+  const sections = [
+    {
+      title: "Decoración",
+      link: "/decoraciones",
+      imgSrc: "/images/producto2.jpg",
+    },
+    { title: "Bebidas", link: "/bebidas", imgSrc: "/images/producto2.jpg" },
+    { title: "Postres", link: "/postres", imgSrc: "/images/producto2.jpg" },
+    { title: "Tortas", link: "/tortas", imgSrc: "/images/producto2.jpg" },
+  ];
+
   return (
-    <section className="py-10">
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.1 }}
-        variants={{
-          hidden: { opacity: 0, y: 100 },
-          visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
-        }}
-      >
-        {categories.map((category, index) => (
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {sections.map((section) => (
           <motion.div
-            key={index}
-            className="relative group overflow-hidden rounded-lg shadow-lg"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+            key={section.title}
+            className="relative group rounded-lg overflow-hidden shadow-lg cursor-pointer"
+            variants={cardVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
           >
             <Image
-              src={category.image}
-              alt={category.name}
-              className="w-full h-64 object-cover"
-              width={200}
-              height={200}
+              src={section.imgSrc}
+              alt={section.title}
+              className="w-full h-56 object-cover transform transition-transform duration-500 group-hover:scale-105"
+              width={224}
+              height={224}
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Link
-                href={category.link}
-                className="text-white bg-pink-500 px-4 py-2 rounded-lg"
-              >
-                Ver {category.name}
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center text-white transition-opacity duration-500 group-hover:bg-opacity-60">
+              <h3 className="text-2xl font-bold mb-4 text-white">
+                {section.title}
+              </h3>
+              <Link href={section.link}>
+                <button className="bg-pink-500 px-6 py-2 rounded-full text-white transition-transform transform group-hover:scale-110">
+                  Ver más
+                </button>
               </Link>
             </div>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
     </section>
   );
 };
