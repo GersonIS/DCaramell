@@ -8,7 +8,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Product } from "@/lib/data/products";
 import Swal from "sweetalert2";
 
-export const PedidoDetalle = () => {
+const PedidoDetalle = () => {
   const [cart, setCart] = useContext(UiContextCarrito) || [[], () => {}]; // Obtenemos el carrito del contexto
 
   // Calcular el subtotal y el total del pedido
