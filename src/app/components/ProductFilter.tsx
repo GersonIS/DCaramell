@@ -11,11 +11,25 @@ export const ProductFilter: React.FC<ProductFilterProps> = ({
   onClear,
 }) => {
   const [name, setName] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
 
   const handleFilter = () => {
-    onFilter(name, parseFloat(minPrice) || 0, parseFloat(maxPrice) || Infinity);
+    // Verifica si los campos de precio son válidos o establece valores predeterminados
+    const min = minPrice === "" ? 0 : parseFloat(minPrice);
+    const max = maxPrice === "" ? Infinity : parseFloat(maxPrice);
+
+    // Llama la función de filtro
+    onFilter(name, min, max);
+  };
+
+  const handleClear = () => {
+    // Limpia los campos de entrada
+    setName("");
+    setMinPrice("");
+    setMaxPrice("");
+    // Llama la función de limpiar filtros
+    onClear();
   };
 
   return (
@@ -59,15 +73,15 @@ export const ProductFilter: React.FC<ProductFilterProps> = ({
       </div>
       <button
         onClick={handleFilter}
-        className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition mr-2"
+        className="bg-pink-400 text-white px-4 py-2 rounded-md hover:bg-pink-300 transition mr-2"
       >
         Filtrar
       </button>
       <button
-        onClick={onClear}
-        className="bg-gray-300 text-black px-4 py-2 rounded-md mt-2 hover:bg-gray-400 transition"
+        onClick={handleClear}
+        className="bg-gray-400 text-white px-4 py-2 rounded-md mt-2 hover:bg-gray-300 transition"
       >
-        Limpiar Filtros
+        Sin Filtros
       </button>
     </div>
   );

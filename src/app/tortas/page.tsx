@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ProductCard } from "../components/ProductCard";
 import { ProductFilter } from "../components/ProductFilter";
 import { Product, products } from "@/lib/data/products";
 import { motion } from "framer-motion";
+import { UiContextCarrito } from "@/context/UiProvideCarrito";
 
 const pageVariants = {
   hidden: { opacity: 0, x: -100 },
@@ -14,10 +15,21 @@ const TortasPage = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(
     products.filter((product) => product.category === "tortas")
   );
-  const [cart, setCart] = useState<Product[]>([]);
+
+  // Consumir el contexto del carrito
+  const cartContext = useContext(UiContextCarrito);
+
+  // Verificar si el contexto es undefined
+  if (!cartContext) {
+    throw new Error(
+      "UiContextCarrito debe ser usado dentro de UiProviderCarrito"
+    );
+  }
+
+  const [cart, setCart] = cartContext;
 
   const handleAddToCart = (product: Product, quantity: number) => {
-    setCart((prevCart) => {
+    setCart((prevCart: Product[]) => {
       const existingProduct = prevCart.find((item) => item.id === product.id);
 
       if (existingProduct) {
@@ -31,7 +43,6 @@ const TortasPage = () => {
       }
     });
   };
-
   const handleFilter = (name: string, minPrice: number, maxPrice: number) => {
     const filtered = products
       .filter((product) => product.category === "tortas")

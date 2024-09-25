@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Product } from "@/lib/data/products";
 import Image from "next/image";
+import Swal from "sweetalert2";
 
 interface ProductCardProps {
   product: Product;
@@ -18,7 +19,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleAddToCart = () => {
     onAddToCart(product, quantity);
-    alert("Producto agregado exitosamente al carrito de compras.");
+    Swal.fire({
+      text: "Se agrego al carrito exitosamente! c:",
+      icon: "success",
+      showConfirmButton: false,
+      timer: 1500, // Establecer el tiempo en milisegundos para cerrar automáticamente el mensaje
+    }).then((result: any) => {
+      // Acción a realizar después de que se cierra el modal
+    });
     setShowModal(false); // Cierra el modal después de agregar al carrito
   };
 
