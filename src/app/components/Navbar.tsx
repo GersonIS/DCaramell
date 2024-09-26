@@ -80,6 +80,7 @@ export const Navbar = () => {
                 className={`block py-2 hover:bg-pink-500 rounded-sm ${
                   path === href ? "bg-pink-500 text-white" : " text-pink-100"
                 }`}
+                onClick={toggleMenu}
               >
                 {label}
               </Link>

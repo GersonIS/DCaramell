@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { UiProviderCarrito } from "@/context/UiProvideCarrito";
+import { CustomerProvider } from "@/context/UiProvideUser";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <UiProviderCarrito>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </UiProviderCarrito>
+        <CustomerProvider>
+          <UiProviderCarrito>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+          </UiProviderCarrito>
+        </CustomerProvider>
       </body>
     </html>
   );

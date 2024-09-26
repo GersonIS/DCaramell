@@ -16,6 +16,8 @@ const DecoracionPage = () => {
     products.filter((product) => product.category === "decoracion")
   );
 
+  const [showFilter, setShowFilter] = useState(false);
+
   // Consumir el contexto del carrito
   const cartContext = useContext(UiContextCarrito);
 
@@ -71,12 +73,23 @@ const DecoracionPage = () => {
       className="p-8"
     >
       <h1 className="text-2xl font-bold mb-6 text-center">Decoraciones</h1>
+      {/* Botón para mostrar/ocultar filtro en modo mobile */}
+      <div className="mb-4 text-center md:hidden">
+        <button
+          onClick={() => setShowFilter(!showFilter)}
+          className="px-4 py-2 bg-pink-400 text-white rounded-md"
+        >
+          {showFilter ? "Ocultar Filtros" : "Mostrar Filtros"}
+        </button>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-8">
+        {/* Filtro, visible en mobile solo si showFilter es true */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="md:w-1/4"
+          className={`md:w-1/4 ${showFilter ? "block" : "hidden md:block"}`}
         >
           <ProductFilter onFilter={handleFilter} onClear={handleClearFilters} />
         </motion.div>
