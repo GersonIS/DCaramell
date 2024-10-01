@@ -163,7 +163,7 @@ export const Header = () => {
                       onClick={closeDropdown}
                       className="text-white hover:text-gray-100"
                     >
-                      <div className="text-center mt-2 py-1 bg-pink-400 rounded-md hover:bg-pink-300">
+                      <div className="text-center mt-2 py-1 bg-pink-400 hover:bg-pink-300">
                         Ver carrito
                       </div>
                     </Link>

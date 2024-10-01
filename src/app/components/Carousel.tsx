@@ -4,12 +4,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 const images = [
-  "/images/producto2.jpg",
-  "/images/producto2.jpg",
-  "/images/producto2.jpg",
-  "/images/producto2.jpg",
-  "/images/producto2.jpg",
-  "/images/producto2.jpg",
+  "/images/slider1.jpg",
+  "/images/slider2.jpg",
+  "/images/slider3.jpg",
+  "/images/slider4.jpg",
 ];
 
 export const Carousel = () => {
@@ -45,7 +43,7 @@ export const Carousel = () => {
           <Image
             src={images[currentIndex]}
             alt={`Producto ${currentIndex + 1}`}
-            className="w-full max-h-[400px] object-cover"
+            className="w-full max-h-[500px] object-cover"
             height={400}
             width={400}
           />
@@ -55,6 +53,7 @@ export const Carousel = () => {
       {/* Botón Prev con animación */}
       <motion.button
         onClick={handlePrev}
+        aria-label="Anterior"
         className="absolute top-1/2 transform -translate-y-1/2 left-4 bg-black bg-opacity-50 text-white p-3 rounded-full focus:outline-none"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -79,6 +78,7 @@ export const Carousel = () => {
       {/* Botón Next con animación */}
       <motion.button
         onClick={handleNext}
+        aria-label="Siguiente"
         className="absolute top-1/2 transform -translate-y-1/2 right-4 bg-black bg-opacity-50 text-white p-3 rounded-full focus:outline-none"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
