@@ -13,6 +13,8 @@ const NosotrosPage = () => {
     email: "",
     message: "",
   });
+  const [isSending, setIsSending] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -20,13 +22,33 @@ const NosotrosPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const { name, email, message } = form;
-    window.open(
-      `https://wa.me/948765692?text=Nombre:%20${name}%0ACorreo:%20${email}%0AMensaje:%20${message}`
-    );
-    setForm({ name: "", email: "", message: "" });
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setSuccess("Por favor completa todos los campos antes de enviar.");
+      return;
+    }
+    setIsSending(true);
+    setSuccess("");
+    try {
+      // Mantener la integración existente con WhatsApp, pero mostrar feedback local
+      window.open(
+        `https://wa.me/932093895?text=Nombre:%20${encodeURIComponent(
+          name
+        )}%0ACorreo:%20${encodeURIComponent(email)}%0AMensaje:%20${encodeURIComponent(
+          message
+        )}`
+      );
+      // Simular latencia mínima para que el usuario vea el estado
+      await new Promise((r) => setTimeout(r, 700));
+      setSuccess("Mensaje enviado. Te responderemos pronto vía WhatsApp.");
+      setForm({ name: "", email: "", message: "" });
+    } catch (err) {
+      setSuccess("Hubo un problema al enviar. Intenta de nuevo.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -73,7 +95,7 @@ const NosotrosPage = () => {
           className="md:w-1/2"
         >
           <h2 className="text-xl font-semibold mb-6 text-pink-500">Contacto</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" aria-live="polite">
             <div>
               <label htmlFor="name" className="block text-base mb-1">
                 Nombre:
@@ -119,12 +141,23 @@ const NosotrosPage = () => {
                 autoComplete="off"
               ></textarea>
             </div>
-            <button
-              type="submit"
-              className="w-full bg-pink-500 text-white py-3 rounded-md hover:bg-pink-600 transition-shadow hover:shadow-lg"
-            >
-              Enviar
-            </button>
+            <div className="flex flex-col gap-3">
+              <button
+                type="submit"
+                disabled={isSending}
+                className="w-full bg-pink-500 text-white py-3 rounded-md hover:bg-pink-600 transition-shadow hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isSending ? "Enviando..." : "Enviar"}
+              </button>
+              {success && (
+                <div
+                  className="text-sm text-green-700 bg-green-50 p-3 rounded-md"
+                  role="status"
+                >
+                  {success}
+                </div>
+              )}
+            </div>
           </form>
         </motion.div>
       </div>

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Navbar } from "./Navbar";
 import { motion } from "framer-motion";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { Product } from "@/lib/data/products";
 import { UiContextCarrito } from "@/context/UiProvideCarrito";
 import Image from "next/image";
@@ -18,6 +18,7 @@ export const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false); // Estado para controlar el montaje
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Obtener datos del cliente
   const [customerData] = useCustomerContext();
@@ -29,6 +30,32 @@ export const Header = () => {
       setInitial(customerData.nombre.charAt(0).toUpperCase());
     }
   }, [customerData]);
+
+  // Cerrar dropdown al hacer click fuera o presionar Esc
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDropdownOpen(false);
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("keydown", handleEsc);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [dropdownOpen]);
 
   // Manejar el toggle del dropdown
   const toggleDropdown = () => {
@@ -71,32 +98,52 @@ export const Header = () => {
 
   return (
     <motion.header
-      initial={{ y: -50, opacity: 0 }}
+      initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="sticky top-0 z-40"
     >
-      <div className="bg-gradient-to-r from-pink-400 to-pink-50 border-b shadow-md">
+      <div className="bg-gradient-to-r from-pink-500 to-pink-300 border-b shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <div>
-            <Link href={"/"} className="text-lg font-bold text-white">
+            <Link href={"/"} className="text-xl font-extrabold text-white tracking-wide">
               D&apos; Caramell
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <button onClick={toggleDropdown} className="relative">
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={toggleDropdown}
+                aria-haspopup="true"
+                aria-expanded={dropdownOpen}
+                aria-label="Abrir carrito"
+                className="relative p-2 rounded hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40 text-white"
+              >
                 {/* Icono del carrito */}
-                <FontAwesomeIcon icon={faShoppingCart} className="w-4 h-4" />
+                <FontAwesomeIcon icon={faShoppingCart} className="w-5 h-5" />
                 {/* Mostrar cantidad de productos solo si el componente está montado */}
                 {isMounted && totalItems > 0 && (
-                  <span className="absolute top-0 right-0 bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <motion.span
+                    key={totalItems}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                    className="absolute -top-1 -right-1 bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    aria-live="polite"
+                  >
                     {totalItems}
-                  </span>
+                  </motion.span>
                 )}
               </button>
               {/* Dropdown de productos */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-10">
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.18 }}
+                  className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 ring-1 ring-black ring-opacity-5"
+                >
                   <div className="p-4 max-h-80 overflow-y-auto">
                     {totalItems === 0 ? (
                       <p className="text-center text-gray-500">
@@ -106,7 +153,7 @@ export const Header = () => {
                       cart.map((product: Product) => (
                         <div
                           key={product.id}
-                          className="flex my-2 items-center"
+                          className="flex my-2 items-center border-b last:border-b-0 pb-2"
                         >
                           {/* Imagen del producto a la izquierda */}
                           <Image
@@ -118,35 +165,38 @@ export const Header = () => {
                           />
                           {/* Detalles del producto a la derecha */}
                           <div className="flex flex-col flex-grow ml-4">
-                            <div className="flex justify-between">
-                              <span className="font-semibold">
+                            <div className="flex justify-between items-start">
+                              <span className="font-medium text-gray-800">
                                 {product.name}
                               </span>
-                              <span className="text-gray-500">
+                              <span className="text-gray-600">
                                 ${product.price}
                               </span>
                             </div>
                             <span className="text-sm text-gray-500">
                               Total: $
-                              {(product.price * product.quantity!).toFixed(2)}
+                              {(product.price * (product.quantity || 0)).toFixed(2)}
                             </span>
                             <div className="flex items-center mt-2 space-x-2">
                               <button
                                 onClick={() => decreaseQuantity(product)}
-                                className="px-2 py-1 bg-gray-200 text-red-600 hover:bg-red-200 rounded"
+                                className="px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-pink-300"
+                                aria-label={`Disminuir cantidad de ${product.name}`}
                               >
                                 -
                               </button>
-                              <span>{product.quantity}</span>
+                              <span className="w-6 text-center">{product.quantity}</span>
                               <button
                                 onClick={() => increaseQuantity(product)}
-                                className="px-2 py-1 bg-gray-200 text-green-600 hover:bg-green-200 rounded"
+                                className="px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-pink-300"
+                                aria-label={`Aumentar cantidad de ${product.name}`}
                               >
                                 +
                               </button>
                               <button
                                 onClick={() => removeProduct(product.id)}
-                                className="ml-auto bg-pink-400 hover:bg-red-200 rounded p-2"
+                                className="ml-auto bg-pink-500 hover:bg-pink-400 text-white rounded p-2 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                                aria-label={`Eliminar ${product.name}`}
                               >
                                 <FontAwesomeIcon
                                   icon={faTrash}
@@ -163,20 +213,21 @@ export const Header = () => {
                       onClick={closeDropdown}
                       className="text-white hover:text-gray-100"
                     >
-                      <div className="text-center mt-2 py-1 bg-pink-400 hover:bg-pink-300">
+                      <div className="text-center mt-2 py-2 bg-pink-500 hover:bg-pink-400 rounded">
                         Ver carrito
                       </div>
                     </Link>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="text-sm text-white h-10"
+              className="text-sm text-white h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/40"
+              aria-label="Abrir usuario"
             >
               {initial ? (
-                initial
+                <span className="font-semibold">{initial}</span>
               ) : (
                 <FontAwesomeIcon icon={faUser} className="w-4 h-4" />
               )}

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
@@ -12,6 +12,19 @@ const images = [
 
 export const Carousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const autoplayRef = useRef<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (!isPaused) {
+      autoplayRef.current = window.setInterval(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      }, 4000);
+    }
+    return () => {
+      if (autoplayRef.current) window.clearInterval(autoplayRef.current);
+    };
+  }, [isPaused]);
 
   const handlePrev = () => {
     setCurrentIndex((prevIndex) =>
@@ -26,9 +39,9 @@ export const Carousel = () => {
   };
 
   return (
-    <div className="relative w-full mb-5">
+    <div className="relative w-full mb-5" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
       <motion.div
-        className="overflow-hidden"
+        className="overflow-hidden rounded-lg shadow-md"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -40,13 +53,16 @@ export const Carousel = () => {
           exit={{ x: -300, opacity: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <Image
-            src={images[currentIndex]}
-            alt={`Producto ${currentIndex + 1}`}
-            className="w-full max-h-[500px] object-cover"
-            height={400}
-            width={400}
-          />
+          {/* Contenedor con altura fija para evitar salto entre imágenes */}
+          <div className="relative w-full h-64 sm:h-72 md:h-96">
+            <Image
+              src={images[currentIndex]}
+              alt={`Producto ${currentIndex + 1}`}
+              className="object-cover"
+              fill
+              priority={true}
+            />
+          </div>
         </motion.div>
       </motion.div>
 

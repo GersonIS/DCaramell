@@ -1,136 +1,97 @@
 "use client";
-import { useState, useContext } from "react";
+import { useState, useContext, useMemo } from "react";
+import Link from "next/link";
 import { ProductCard } from "../components/ProductCard";
-import { ProductFilter } from "../components/ProductFilter";
 import { Product, products } from "@/lib/data/products";
-import { motion } from "framer-motion";
 import { UiContextCarrito } from "@/context/UiProvideCarrito";
 
-const pageVariants = {
-  hidden: { opacity: 0, x: -100 },
-  visible: { opacity: 1, x: 0 },
-};
-
 const DecoracionPage = () => {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(
-    products.filter((product) => product.category === "decoracion")
-  );
+  const allDecor = useMemo(() => products.filter((p) => p.category === "decoracion"), []);
 
-  const [showFilter, setShowFilter] = useState(false);
-
-  // Consumir el contexto del carrito
   const cartContext = useContext(UiContextCarrito);
-
-  // Verificar si el contexto es undefined
   if (!cartContext) {
-    throw new Error(
-      "UiContextCarrito debe ser usado dentro de UiProviderCarrito"
-    );
+    throw new Error("UiContextCarrito debe ser usado dentro de UiProviderCarrito");
   }
-
   const [cart, setCart] = cartContext;
 
-  const handleAddToCart = (product: Product, quantity: number) => {
-    setCart((prevCart: Product[]) => {
-      const existingProduct = prevCart.find((item) => item.id === product.id);
+  const [search, setSearch] = useState("");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [sort, setSort] = useState<"default" | "price-asc" | "price-desc" | "name">("default");
 
-      if (existingProduct) {
-        return prevCart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: (item.quantity || 0) + quantity }
-            : item
-        );
-      } else {
-        return [...prevCart, { ...product, quantity }];
-      }
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let res = allDecor.filter((p) => p.name.toLowerCase().includes(q));
+    const min = minPrice === "" ? 0 : parseFloat(minPrice);
+    const max = maxPrice === "" ? Infinity : parseFloat(maxPrice);
+    res = res.filter((p) => p.price >= min && p.price <= max);
+    if (sort === "price-asc") res.sort((a, b) => a.price - b.price);
+    if (sort === "price-desc") res.sort((a, b) => b.price - a.price);
+    if (sort === "name") res.sort((a, b) => a.name.localeCompare(b.name));
+    return res;
+  }, [allDecor, search, minPrice, maxPrice, sort]);
+
+  const addToCart = (product: Product, quantity: number) => {
+    setCart((prev: Product[]) => {
+      const found = prev.find((p) => p.id === product.id);
+      if (found) return prev.map((p) => (p.id === product.id ? { ...p, quantity: (p.quantity || 0) + quantity } : p));
+      return [...prev, { ...product, quantity }];
     });
   };
 
-  const handleFilter = (name: string, minPrice: number, maxPrice: number) => {
-    const filtered = products
-      .filter((product) => product.category === "decoracion")
-      .filter(
-        (product) =>
-          product.name.toLowerCase().includes(name.toLowerCase()) &&
-          product.price >= minPrice &&
-          product.price <= maxPrice
-      );
-    setFilteredProducts(filtered);
-  };
-
-  const handleClearFilters = () => {
-    setFilteredProducts(
-      products.filter((product) => product.category === "decoracion")
-    );
-  };
-
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={pageVariants}
-      transition={{ duration: 0.5 }}
-      className="p-8"
-    >
-      <h1 className="text-2xl font-bold mb-6 text-center">Decoraciones</h1>
-      {/* Botón para mostrar/ocultar filtro en modo mobile */}
-      <div className="mb-4 text-center md:hidden">
-        <button
-          onClick={() => setShowFilter(!showFilter)}
-          className="px-4 py-2 bg-pink-400 text-white rounded-md"
-        >
-          {showFilter ? "Ocultar Filtros" : "Mostrar Filtros"}
-        </button>
-      </div>
+    <main className="max-w-7xl mx-auto p-6">
+      <header className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center mb-6">
+        <div className="md:col-span-2">
+          <h1 className="text-3xl font-extrabold">Decoraciones</h1>
+          <p className="text-gray-600 mt-2">Adornos, manteles, centros de mesa y más para tu celebración.</p>
+        </div>
+        <div className="flex gap-3 justify-end">
+          <Link href="/pedido" className="bg-pink-500 text-white px-4 py-2 rounded">Hacer pedido</Link>
+        </div>
+      </header>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Filtro, visible en mobile solo si showFilter es true */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className={`md:w-1/4 ${showFilter ? "block" : "hidden md:block"}`}
-        >
-          <ProductFilter onFilter={handleFilter} onClear={handleClearFilters} />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="md:w-3/4"
-        >
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.1 },
-              },
-            }}
-          >
-            {filteredProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.4 }}
-              >
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-      </div>
-    </motion.div>
+      <section className="bg-white rounded p-4 shadow mb-6">
+        <div className="flex flex-col lg:flex-row gap-3 items-center">
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nombre..." className="border rounded px-3 py-2 flex-1" />
+          <div className="flex gap-2 items-center">
+            <input value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder="Min" className="border rounded px-2 py-2 w-20" />
+            <input value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="Max" className="border rounded px-2 py-2 w-20" />
+            <select value={sort} onChange={(e) => setSort(e.target.value as any)} className="border rounded px-2 py-2">
+              <option value="default">Recomendado</option>
+              <option value="price-asc">Precio ↑</option>
+              <option value="price-desc">Precio ↓</option>
+              <option value="name">Nombre</option>
+            </select>
+            <button
+              onClick={() => {
+                setSearch("");
+                setMinPrice("");
+                setMaxPrice("");
+                setSort("default");
+              }}
+              className="ml-2 px-3 py-2 border rounded bg-white hover:bg-gray-50"
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">No hay productos que coincidan.</div>
+          ) : (
+            filtered.map((p) => (
+              <div key={p.id}>
+                <ProductCard product={p} onAddToCart={addToCart} />
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+    </main>
   );
 };
 
